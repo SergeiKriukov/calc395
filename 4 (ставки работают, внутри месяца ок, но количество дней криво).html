@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проценты по 395 ГК РФ для споров о взыскании расходов по установке ОДПУ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .object {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .object-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .object-header button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .object-header button:hover {
+            background: #d32f2f;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        #results {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #copy-btn {
+            margin-top: 10px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+        #copy-btn:hover {
+            background: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Проценты по 395 ГК РФ для споров о взыскании расходов по установке ОДПУ</h1>
+        <div id="objects">
+            <div class="object" data-object-index="0">
+                <div class="object-header">
+                    <span>Объект 1</span>
+                    <button onclick="removeObject(this)">Удалить</button>
+                </div>
+                <div class="form-group">
+                    <label for="payment-0">Ежемесячный платеж (a):</label>
+                    <input type="number" id="payment-0" min="0" step="0.01" placeholder="Введите сумму">
+                </div>
+                <div class="form-group">
+                    <label for="period-0">Период задолженности:</label>
+                    <input type="month" id="start-period-0"> - <input type="month" id="end-period-0">
+                </div>
+            </div>
+        </div>
+        <button onclick="addObject()">Добавить объект</button>
+        <button onclick="calculate()">Рассчитать</button>
+        <div id="results"></div>
+        <button id="copy-btn" onclick="copyResults()">Скопировать результат</button>
+    </div>
+
+    <script>
+        let objectCount = 1;
+
+        const rates = [
+            { start: '2024-10-28', end: null, rate: 21 },
+            { start: '2024-09-16', end: '2024-10-27', rate: 19 },
+            { start: '2024-07-29', end: '2024-09-15', rate: 18 },
+            { start: '2023-12-18', end: '2024-07-28', rate: 16 },
+            { start: '2023-10-30', end: '2023-12-17', rate: 15 },
+            { start: '2023-09-18', end: '2023-10-29', rate: 13 },
+            { start: '2023-08-15', end: '2023-09-17', rate: 12 },
+            { start: '2023-07-24', end: '2023-08-14', rate: 8.5 },
+            { start: '2022-09-19', end: '2023-07-23', rate: 7.5 },
+            { start: '2022-07-25', end: '2022-09-18', rate: 8 },
+            { start: '2022-06-14', end: '2022-07-24', rate: 9.5 },
+            { start: '2022-05-27', end: '2022-06-13', rate: 11 },
+            { start: '2022-05-04', end: '2022-05-26', rate: 14 },
+            { start: '2022-04-11', end: '2022-05-03', rate: 17 },
+            { start: '2022-02-28', end: '2022-04-10', rate: 20 },
+            { start: '2022-02-14', end: '2022-02-27', rate: 9.5 },
+            { start: '2021-12-20', end: '2022-02-13', rate: 8.5 },
+            { start: '2021-10-25', end: '2021-12-19', rate: 7.5 },
+            { start: '2021-09-13', end: '2021-10-24', rate: 6.75 },
+            { start: '2021-07-26', end: '2021-09-12', rate: 6.5 },
+            { start: '2021-06-15', end: '2021-07-25', rate: 5.5 },
+            { start: '2021-04-26', end: '2021-06-14', rate: 5 },
+            { start: '2021-03-22', end: '2021-04-25', rate: 4.5 },
+            { start: '2020-07-27', end: '2021-03-21', rate: 4.25 },
+            { start: '2020-06-22', end: '2020-07-26', rate: 4.5 },
+            { start: '2020-04-27', end: '2020-06-21', rate: 5.5 },
+            { start: '2020-02-10', end: '2020-04-26', rate: 6 },
+            { start: '2019-12-16', end: '2020-02-09', rate: 6.25 }
+        ];
+
+        function getRateForDateRange(startDate, endDate) {
+            const applicableRates = rates.filter(rate => {
+                const rateStart = new Date(rate.start);
+                const rateEnd = rate.end ? new Date(rate.end) : new Date();
+                return (startDate <= rateEnd && endDate >= rateStart);
+            });
+
+            const dailyRates = [];
+            for (const rate of applicableRates) {
+                const rateStart = new Date(rate.start) < startDate ? startDate : new Date(rate.start);
+                const rateEnd = !rate.end || new Date(rate.end) > endDate ? endDate : new Date(rate.end);
+                const days = Math.ceil((rateEnd - rateStart + 1) / (1000 * 60 * 60 * 24));
+                dailyRates.push({ days, rate: rate.rate });
+            }
+
+            return dailyRates;
+        }
+
+        function addObject() {
+            const container = document.getElementById('objects');
+            const objectDiv = document.createElement('div');
+            objectDiv.className = 'object';
+            objectDiv.setAttribute('data-object-index', objectCount);
+            objectDiv.innerHTML = `
+                <div class="object-header">
+                    <span>Объект ${objectCount + 1}</span>
+                    <button onclick="removeObject(this)">Удалить</button>
+                </div>
+                <div class="form-group">
+                    <label for="payment-${objectCount}">Ежемесячный платеж (a):</label>
+                    <input type="number" id="payment-${objectCount}" min="0" step="0.01" placeholder="Введите сумму">
+                </div>
+                <div class="form-group">
+                    <label for="period-${objectCount}">Период задолженности:</label>
+                    <input type="month" id="start-period-${objectCount}"> - <input type="month" id="end-period-${objectCount}">
+                </div>
+            `;
+            container.appendChild(objectDiv);
+            objectCount++;
+        }
+
+        function removeObject(button) {
+            const object = button.parentElement.parentElement;
+            object.remove();
+        }
+
+        function calculate() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.textContent = '';
+            let totalPrincipal = 0;
+            let totalInterest = 0;
+
+            for (let i = 0; i < objectCount; i++) {
+                const objectDiv = document.querySelector(`[data-object-index="${i}"]`);
+                if (!objectDiv) continue;
+
+                const initialPayment = parseFloat(document.getElementById(`payment-${i}`).value);
+                const startPeriod = document.getElementById(`start-period-${i}`).value;
+                const endPeriod = document.getElementById(`end-period-${i}`).value;
+
+                if (!initialPayment || !startPeriod || !endPeriod) {
+                    resultsDiv.textContent += `Объект ${i + 1}: заполните все поля.\n`;
+                    continue;
+                }
+
+                const startDate = new Date(startPeriod);
+                const endDate = new Date(endPeriod);
+                let currentDate = new Date(startDate);
+                let principal = 0;
+                let interest = 0;
+                let payment = initialPayment;
+
+                resultsDiv.textContent += `Объект ${i + 1}: расчет...\n`;
+
+                while (currentDate <= endDate) {
+                    const year = currentDate.getFullYear();
+                    const daysInYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;
+                    const month = currentDate.getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), daysInMonth);
+
+                    const dailyRates = getRateForDateRange(monthStart, monthEnd);
+                    let monthInterest = 0;
+
+                    for (const { days, rate } of dailyRates) {
+                        monthInterest += (payment * days / daysInYear) * (rate / 100);
+                        resultsDiv.textContent += `Формула: (${payment.toFixed(2)} * ${days} / ${daysInYear}) * (${rate}% / 100)\n`;
+                    }
+
+                    principal += payment;
+                    interest += monthInterest;
+
+                    resultsDiv.textContent += `Месяц: ${currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}\n`;
+                    resultsDiv.textContent += `Проценты за месяц: ${monthInterest.toFixed(2)}\n`;
+                    resultsDiv.textContent += `Долг нарастающим итогом: ${principal.toFixed(2)}\n\n`;
+
+                    payment += initialPayment; // Увеличение ежемесячного платежа
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
+
+                resultsDiv.textContent += `Основной долг по объекту ${i + 1}: ${principal.toFixed(2)}\n`;
+                resultsDiv.textContent += `Проценты по объекту ${i + 1}: ${interest.toFixed(2)}\n\n`;
+                totalPrincipal += principal;
+                totalInterest += interest;
+            }
+
+            resultsDiv.textContent += `\nОбщая сумма основного долга: ${totalPrincipal.toFixed(2)}\nОбщая сумма процентов: ${totalInterest.toFixed(2)}\n`;
+        }
+
+        function copyResults() {
+            const resultsDiv = document.getElementById('results');
+            navigator.clipboard.writeText(resultsDiv.textContent).then(() => {
+                alert('Результаты скопированы!');
+            });
+        }
+    </script>
+</body>
+</html>
