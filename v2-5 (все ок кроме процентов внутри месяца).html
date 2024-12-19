@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проценты по 395 ГК РФ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .object {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .object-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .object-header strong {
+            font-weight: bold;
+        }
+        .result {
+            white-space: pre-wrap;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .add-remove-buttons {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Проценты по 395 ГК РФ</h1>
+        <div class="add-remove-buttons">
+            <button id="addObject">+ Добавить объект</button>
+        </div>
+        <div id="objects">
+            <!-- Объекты добавляются здесь -->
+        </div>
+        <button id="calculate">Рассчитать</button>
+        <h2>Результат:</h2>
+        <div class="result" id="result">Здесь отобразится результат расчета.</div>
+        <button id="copyResult">Скопировать результат</button>
+    </div>
+
+    <script>
+        const objectsContainer = document.getElementById('objects');
+        const resultContainer = document.getElementById('result');
+        const copyResultButton = document.getElementById('copyResult');
+
+        document.getElementById('addObject').addEventListener('click', () => {
+            const objectDiv = document.createElement('div');
+            objectDiv.className = 'object';
+
+            objectDiv.innerHTML = `
+                <div class="object-header">
+                    <strong>Объект</strong>
+                    <button class="removeObject">-</button>
+                </div>
+                <label>
+                    Наименование объекта:
+                    <input type="text" class="object-name" placeholder="Введите название">
+                </label>
+                <label>
+                    Ежемесячный платеж:
+                    <input type="number" class="monthly-payment" placeholder="Введите сумму">
+                </label>
+                <label>
+                    Период задолженности:
+                    <input type="month" class="start-period"> по
+                    <input type="month" class="end-period">
+                </label>
+            `;
+
+            objectDiv.querySelector('.removeObject').addEventListener('click', () => {
+                objectDiv.remove();
+            });
+
+            objectsContainer.appendChild(objectDiv);
+        });
+
+        document.getElementById('calculate').addEventListener('click', () => {
+            const objects = document.querySelectorAll('.object');
+            let resultText = '';
+
+            objects.forEach((object, index) => {
+                const name = object.querySelector('.object-name').value || `Объект ${index + 1}`;
+                const payment = parseFloat(object.querySelector('.monthly-payment').value);
+                const startPeriod = object.querySelector('.start-period').value;
+                const endPeriod = object.querySelector('.end-period').value;
+
+                if (!payment || !startPeriod || !endPeriod) {
+                    resultText += `Ошибка: Заполните все данные для <strong>${name}</strong>\n`;
+                    return;
+                }
+
+                const startDate = new Date(startPeriod + '-01');
+                const endDate = new Date(endPeriod + '-01');
+                let currentDate = new Date(startDate);
+
+                let totalDebt = 0;
+                let totalInterest = 0;
+                let monthlyPayment = payment;
+                let cumulativeDebt = 0;
+
+                resultText += `\n<strong>${name}</strong>:\n`;
+
+                while (currentDate <= endDate) {
+                    const year = currentDate.getFullYear();
+                    const month = currentDate.getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const daysInYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;
+
+                    // Определение процентной ставки
+                    const rate = getRateForDate(currentDate);
+
+                    const interest = (monthlyPayment * daysInMonth / daysInYear) * (rate / 100);
+                    cumulativeDebt += monthlyPayment;
+                    totalInterest += interest;
+
+                    resultText += `Месяц: ${currentDate.toLocaleString('ru', { month: 'long', year: 'numeric' })}, ` +
+                                  `Формула: (${monthlyPayment.toFixed(2)} * ${daysInMonth} / ${daysInYear}) * (${rate}%)\n` +
+                                  `Проценты: ${interest.toFixed(2)}\n`;
+
+                    // Увеличение ежемесячного платежа
+                    monthlyPayment += payment;
+
+                    // Переход к следующему месяцу
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
+
+                const monthsCount = ((endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth() + 1));
+                const fixedTotalDebt = payment * monthsCount;
+
+                resultText += `Итоговый долг: ${fixedTotalDebt.toFixed(2)}\n`;
+                resultText += `Итоговые проценты: ${totalInterest.toFixed(2)}\n`;
+            });
+
+            if (resultText === '') resultText = 'Добавьте хотя бы один объект.';
+
+            resultContainer.innerHTML = resultText;
+        });
+
+        copyResultButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(resultContainer.textContent).then(() => {
+                alert('Результат скопирован в буфер обмена!');
+            });
+        });
+
+        function getRateForDate(date) {
+            const rates = [
+                { start: new Date('2024-10-28'), rate: 21 },
+                { start: new Date('2024-09-16'), rate: 19 },
+                { start: new Date('2024-07-29'), rate: 18 },
+                { start: new Date('2023-12-18'), rate: 16 },
+                { start: new Date('2023-10-30'), rate: 15 },
+                { start: new Date('2023-09-18'), rate: 13 },
+                { start: new Date('2023-08-15'), rate: 12 },
+                { start: new Date('2023-07-24'), rate: 8.5 },
+                { start: new Date('2022-09-19'), rate: 7.5 },
+                { start: new Date('2022-07-25'), rate: 8 },
+                { start: new Date('2022-06-14'), rate: 9.5 },
+                { start: new Date('2022-05-27'), rate: 11 },
+                { start: new Date('2022-05-04'), rate: 14 },
+                { start: new Date('2022-04-11'), rate: 17 },
+                { start: new Date('2022-02-28'), rate: 20 },
+                { start: new Date('2022-02-14'), rate: 9.5 },
+                { start: new Date('2021-12-20'), rate: 8.5 },
+                { start: new Date('2021-10-25'), rate: 7.5 },
+                { start: new Date('2021-09-13'), rate: 6.75 },
+                { start: new Date('2021-07-26'), rate: 6.5 },
+                { start: new Date('2021-06-15'), rate: 5.5 },
+                { start: new Date('2021-04-26'), rate: 5 },
+                { start: new Date('2021-03-22'), rate: 4.5 },
+                { start: new Date('2020-07-27'), rate: 4.25 },
+                { start: new Date('2020-06-22'), rate: 4.5 },
+                { start: new Date('2020-04-27'), rate: 5.5 },
+                { start: new Date('2020-02-10'), rate: 6 },
+                { start: new Date('2019-12-16'), rate: 6.25 }
+            ];
+
+            for (let i = 0; i < rates.length; i++) {
+                if (date >= rates[i].start) {
+                    return rates[i].rate;
+                }
+            }
+            return 0; // Если нет ставки
+        }
+    </script>
+</body>
+</html>
