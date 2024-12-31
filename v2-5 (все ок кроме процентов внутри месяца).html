@@ -49,6 +49,13 @@
         .add-remove-buttons {
             margin-bottom: 20px;
         }
+	button.removeObject {
+        background-color: #FF0000;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
     </style>
 </head>
 <body>
@@ -78,7 +85,7 @@
             objectDiv.innerHTML = `
                 <div class="object-header">
                     <strong>Объект</strong>
-                    <button class="removeObject">-</button>
+                    <button class="removeObject">- Удалить объект</button>
                 </div>
                 <label>
                     Наименование объекта:
