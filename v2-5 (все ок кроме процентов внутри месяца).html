@@ -179,42 +179,51 @@
 
         function getRateForDate(date) {
             const rates = [
-                { start: new Date('2024-10-28'), rate: 21 },
-                { start: new Date('2024-09-16'), rate: 19 },
-                { start: new Date('2024-07-29'), rate: 18 },
-                { start: new Date('2023-12-18'), rate: 16 },
-                { start: new Date('2023-10-30'), rate: 15 },
-                { start: new Date('2023-09-18'), rate: 13 },
-                { start: new Date('2023-08-15'), rate: 12 },
-                { start: new Date('2023-07-24'), rate: 8.5 },
-                { start: new Date('2022-09-19'), rate: 7.5 },
-                { start: new Date('2022-07-25'), rate: 8 },
-                { start: new Date('2022-06-14'), rate: 9.5 },
-                { start: new Date('2022-05-27'), rate: 11 },
-                { start: new Date('2022-05-04'), rate: 14 },
-                { start: new Date('2022-04-11'), rate: 17 },
-                { start: new Date('2022-02-28'), rate: 20 },
-                { start: new Date('2022-02-14'), rate: 9.5 },
-                { start: new Date('2021-12-20'), rate: 8.5 },
-                { start: new Date('2021-10-25'), rate: 7.5 },
-                { start: new Date('2021-09-13'), rate: 6.75 },
-                { start: new Date('2021-07-26'), rate: 6.5 },
-                { start: new Date('2021-06-15'), rate: 5.5 },
-                { start: new Date('2021-04-26'), rate: 5 },
-                { start: new Date('2021-03-22'), rate: 4.5 },
-                { start: new Date('2020-07-27'), rate: 4.25 },
-                { start: new Date('2020-06-22'), rate: 4.5 },
-                { start: new Date('2020-04-27'), rate: 5.5 },
-                { start: new Date('2020-02-10'), rate: 6 },
-                { start: new Date('2019-12-16'), rate: 6.25 }
+                { start: new Date('2024-10-28'), end: null, rate: 21 },
+                { start: new Date('2024-09-16'), end: new Date('2024-10-27'), rate: 19 },
+                { start: new Date('2024-07-29'), end: new Date('2024-09-15'), rate: 18 },
+                { start: new Date('2023-12-18'), end: new Date('2024-07-28'), rate: 16 },
+                { start: new Date('2023-10-30'), end: new Date('2023-12-17'), rate: 15 },
+                { start: new Date('2023-09-18'), end: new Date('2023-10-29'), rate: 13 },
+                { start: new Date('2023-08-15'), end: new Date('2023-09-17'), rate: 12 },
+                { start: new Date('2023-07-24'), end: new Date('2023-08-14'), rate: 8.5 },
+                { start: new Date('2022-09-19'), end: new Date('2023-07-23'), rate: 7.5 },
+                { start: new Date('2022-07-25'), end: new Date('2022-09-18'), rate: 8 },
+                { start: new Date('2022-06-14'), end: new Date('2022-07-24'), rate: 9.5 },
+                { start: new Date('2022-05-27'), end: new Date('2022-06-13'), rate: 11 },
+                { start: new Date('2022-05-04'), end: new Date('2022-05-26'), rate: 14 },
+                { start: new Date('2022-04-11'), end: new Date('2022-05-03'), rate: 17 },
+                { start: new Date('2022-02-28'), end: new Date('2022-04-10'), rate: 20 },
+                { start: new Date('2022-02-14'), end: new Date('2022-02-27'), rate: 9.5 },
+                { start: new Date('2021-12-20'), end: new Date('2022-02-13'), rate: 8.5 },
+                { start: new Date('2021-10-25'), end: new Date('2021-12-19'), rate: 7.5 },
+                { start: new Date('2021-09-13'), end: new Date('2021-10-24'), rate: 6.75 },
+                { start: new Date('2021-07-26'), end: new Date('2021-09-12'), rate: 6.5 },
+                { start: new Date('2021-06-15'), end: new Date('2021-07-25'), rate: 5.5 },
+                { start: new Date('2021-04-26'), end: new Date('2021-06-14'), rate: 5 },
+                { start: new Date('2021-03-22'), end: new Date('2021-04-25'), rate: 4.5 },
+                { start: new Date('2020-07-27'), end: new Date('2021-03-21'), rate: 4.25 },
+                { start: new Date('2020-06-22'), end: new Date('2020-07-26'), rate: 4.5 },
+                { start: new Date('2020-04-27'), end: new Date('2020-06-21'), rate: 5.5 },
+                { start: new Date('2020-02-10'), end: new Date('2020-04-26'), rate: 6 },
+                { start: new Date('2019-12-16'), end: new Date('2020-02-09'), rate: 6.25 }
             ];
-
-            for (let i = 0; i < rates.length; i++) {
-                if (date >= rates[i].start) {
-                    return rates[i].rate;
+        
+	function getRateForDate(date) {
+            for (const rate of rates) {
+                if (date >= rate.start && (!rate.end || date <= rate.end)) {
+                const rateEnd = rate.end || new Date();
+                return rate.rate;
                 }
-            }
-            return 0; // Если нет ставки
+             }
+	      return 0;
+	}
+        function getRatesForDateRange(startDate, endDate) {
+            return rates.filter(rate => {
+                const rateStart = rate.start;
+                const rateEnd = rate.end || new Date() : new Date();
+                return startDate <= rateEnd && endDate >= rateStart;
+            });
         }
     </script>
 </body>
